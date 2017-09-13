@@ -1,0 +1,55 @@
+{
+  "name": "@cotto/action-dispatcher",
+  "description": "action-dispatcher",
+  "version": "0.0.1",
+  "author": "cotto",
+  "files": [
+    "es",
+    "dist",
+    "README.md",
+    "LICENCE"
+  ],
+  "main": "dist/index.js",
+  "jsnext:main": "es/index.js",
+  "module": "es/index.js",
+  "types": "dist/index.d.ts",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/cotttpan/action-dispatcher.git"
+  },
+  "bugs": {
+    "url": "https://github.com/cotttpan/action-dispatcher/issues"
+  },
+  "homepage": "https://github.com/cotttpan/action-dispatcher",
+  "dependencies": {
+    "@types/node": "^8.0.28",
+    "eventemitter2": "^4.1.2"
+  },
+  "devDependencies": {
+    "@cotto/tslint-config": "^0.0.6",
+    "@types/jest": "^20.0.8",
+    "@types/sinon": "^2.3.4",
+    "jest": "^21.0.2",
+    "npm-run-all": "^4.1.1",
+    "rimraf": "^2.6.2",
+    "sinon": "^3.2.1",
+    "ts-jest": "^21.0.0",
+    "tslint": "^5.7.0",
+    "typescript": "^2.5.2"
+  },
+  "keywords": [],
+  "scripts": {
+    "build": "npm-run-all build:*",
+    "build:dist": "tsc",
+    "build:es": "tsc --module es2015 --outDir ./es",
+    "clean": "run-p clean:**",
+    "clean:dist": "rimraf ./dist",
+    "clean:es": "rimraf ./es",
+    "lint": "tslint src/**/*.ts",
+    "start": "tsc -w",
+    "myprepublish": "run-s clean build",
+    "mypublish": "npm run myprepublish && npm publish --access=public",
+    "test": "NODE_ENV=test jest --watch"
+  }
+}
