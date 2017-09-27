@@ -6,9 +6,9 @@ interface ActionMap {
 }
 const actionA = (n: number) => ({ type: 'a', payload: n });
 
-const dispatcher = new Dispatcher<ActionMap>();
-
 test('subscribe/unsubscribe', () => {
+    const dispatcher = new Dispatcher<ActionMap>();
+
     const mock = jest.fn();
     /* subscribe */
     const unsubscribe = dispatcher.subscribe(mock);
@@ -18,51 +18,46 @@ test('subscribe/unsubscribe', () => {
     expect(dispatcher.listenersAny()).toEqual([]);
 });
 
-describe('dispatch/dispatchAsync', () => {
-    const mock = jest.fn();
-    const mock2 = jest.fn();
+describe('dispatch', () => {
+    const dispatcher = new Dispatcher<ActionMap>();
+    const listener = jest.fn();
     let unsubscribe;
 
     beforeEach(() => {
-        dispatcher.on('a', mock);
-        unsubscribe = dispatcher.subscribe(mock2);
+        unsubscribe = dispatcher.subscribe(listener);
     });
 
     afterEach(() => {
-        dispatcher.off('a', mock);
         unsubscribe();
     });
 
-    describe('dispatch', () => {
-        test('dispatch with type and payload', () => {
-            const action = dispatcher.dispatch('a', 1);
-            expect(action).toEqual({ type: 'a', payload: 1 });
-            expect(mock).toBeCalledWith(1);
-            expect(mock2).toBeCalledWith('a', 1);
-        });
-
-        test('dispatch with action object', () => {
-            const action = dispatcher.dispatch(actionA(1));
-            expect(action).toEqual({ type: 'a', payload: 1 });
-            expect(mock).toBeCalledWith(1);
-            expect(mock2).toBeCalledWith('a', 1);
-        });
+    test('dispatch with type and payload', () => {
+        expect.assertions(2);
+        const action = dispatcher.dispatch('a', 1);
+        expect(action).toEqual({ type: 'a', payload: 1 });
+        expect(listener).toBeCalledWith('a', { type: 'a', payload: 1 });
     });
 
-    describe('dispatchAsync', () => {
-        test('dispatchAsync with type and payload', async () => {
-            const action = await dispatcher.dispatchAsync('a', 1);
-            expect(action).toEqual({ type: 'a', payload: 1 });
-            expect(mock).toBeCalledWith(1);
-            expect(mock2).toBeCalledWith('a', 1);
-        });
-
-        test('dispatchAsync with action object', async () => {
-            const action = await dispatcher.dispatchAsync(actionA(1));
-            expect(action).toEqual({ type: 'a', payload: 1 });
-            expect(mock).toBeCalledWith(1);
-            expect(mock2).toBeCalledWith('a', 1);
-        });
+    test('dispatch with action object', () => {
+        expect.assertions(2);
+        const action = dispatcher.dispatch(actionA(1));
+        expect(action).toEqual({ type: 'a', payload: 1 });
+        expect(listener).toBeCalledWith('a', { type: 'a', payload: 1 });
     });
+});
+
+test('middleware', (done) => {
+    expect.assertions(1);
+
+    const dispatcher = new Dispatcher({
+        middleware: (action) => Object.assign({}, action, { meta: 'meta' })
+    });
+
+    dispatcher.subscribe((type, action) => {
+        expect(action).toEqual({ type: 'a', payload: 1, meta: 'meta' });
+        done();
+    });
+
+    dispatcher.dispatch(actionA(1));
 });
 

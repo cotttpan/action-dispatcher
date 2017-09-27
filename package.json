@@ -1,7 +1,7 @@
 {
   "name": "@cotto/action-dispatcher",
   "description": "action-dispatcher",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "author": "cotto",
   "files": [
     "es",
@@ -23,6 +23,7 @@
   },
   "homepage": "https://github.com/cotttpan/action-dispatcher",
   "dependencies": {
+    "@cotto/utils.ts": "^0.1.9",
     "@types/node": "^8.0.28",
     "eventemitter2": "^4.1.2"
   },

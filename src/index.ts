@@ -1,47 +1,37 @@
-import { EventEmitter2 } from 'eventemitter2';
+import { EventEmitter2, ConstructorOptions } from 'eventemitter2';
+import { identity } from '@cotto/utils.ts';
 
-export type Listener<T, K extends keyof T> = (arg: T[K]) => void;
-
-export interface Action {
+export interface Action<P = any> {
     type: string;
-    payload?: any;
+    payload?: P;
     [k: string]: any;
 }
 
+export interface Middleware {
+    (action: Action): Action;
+}
+
+export interface Options extends ConstructorOptions {
+    middleware?: Middleware;
+}
+
 export default class ActionDispatcher<T = any> extends EventEmitter2 {
-    on<K extends keyof T>(event: K, listener: Listener<T, K>) {
-        return super.on(event, listener);
-    }
+    middleware: Middleware = identity;
 
-    once<K extends keyof T>(event: K, listener: Listener<T, K>) {
-        return super.once(event, listener);
-    }
-
-    off<K extends keyof T>(event: K, listener: Listener<T, K>) {
-        return super.removeListener(event, listener);
-    }
-
-    emit<K extends keyof T>(event: K, arg: T[K]) {
-        return super.emit(event, arg);
+    constructor(opts?: Options) {
+        super(opts);
+        this.middleware = opts && opts.middleware || identity;
     }
 
     dispatch(action: Action): Action;
     dispatch<K extends keyof T>(type: K, payload: T[K]): Action;
     dispatch(type: string | Action, payload?: any): Action {
         const action: Action = typeof type === 'string' ? { type, payload } : type;
-        super.emit(action.type, action.payload);
+        super.emit(action.type, this.middleware(action));
         return action;
     }
 
-    async dispatchAsync(action: Action): Promise<Action>;
-    async dispatchAsync<K extends keyof T>(type: K, payload: T[K]): Promise<Action>;
-    async dispatchAsync(type: string | Action, payload?: any): Promise<Action> {
-        const action: Action = typeof type === 'string' ? { type, payload } : type;
-        await super.emitAsync(action.type, action.payload);
-        return action;
-    }
-
-    subscribe<K extends keyof T>(listener: (type: K, payload: T[K]) => void) {
+    subscribe<K extends keyof T>(listener: (type: K, action: Action<T[K]>) => void) {
         super.onAny(listener);
         return () => super.offAny(listener);
     }
